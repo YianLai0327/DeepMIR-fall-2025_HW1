@@ -167,3 +167,4 @@ if __name__ == "__main__":
         print(f"Input shape: {inputs.shape}, Lengths: {lengths}, Labels: {labels}")
         break
 
+    print("DataLoader test completed.")
