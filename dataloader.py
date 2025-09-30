@@ -168,3 +168,4 @@ if __name__ == "__main__":
         break
 
     print("DataLoader test completed.")
+    print("All tests passed.")
