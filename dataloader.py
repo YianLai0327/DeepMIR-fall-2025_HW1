@@ -5,7 +5,9 @@ from torch.utils.data import Dataset, DataLoader
 import os
 from torchaudio_augmentations import *
 import json
-
+from tqdm import tqdm
+import torchaudio
+from torchaudio.transforms import MelSpectrogram, Resample
 
 # mapping class names to integers
 class_mapping = {
@@ -83,12 +85,12 @@ class AudioDataset(Dataset):
         if self.mode == 'train':
             # Apply data augmentation for training set
             transforms = [
-                RandomApply([Noise(min_snr=0.3, max_snr=0.5)], p=0.3),
-                RandomApply([Gain()], p=0.2),
-                RandomApply([HighLowPass(sample_rate=self.sr)], p=0.8),
-                RandomApply([Delay(sample_rate=self.sr)], p=0.5),
-                RandomApply([PitchShift(n_samples=1, sample_rate=self.sr)], p=0.4),
-                RandomApply([Reverb(sample_rate=self.sr)], p=0.3),
+                # RandomApply([Noise(min_snr=0.3, max_snr=0.5)], p=0.3),
+                # RandomApply([Gain()], p=0.2),
+                # RandomApply([HighLowPass(sample_rate=self.sr)], p=0.8),
+                # RandomApply([Delay(sample_rate=self.sr)], p=0.5),
+                # RandomApply([PitchShift(n_samples=1, sample_rate=self.sr)], p=0.4),
+                # RandomApply([Reverb(sample_rate=self.sr)], p=0.3),
             ]
             self.augmentation = Compose(transforms=transforms)
 
@@ -100,50 +102,61 @@ class AudioDataset(Dataset):
         Collate function to pad sequences to the same length in a batch.
         
         Args:
-            batch (list): List of log mel-spectrograms.
+            batch (list): List of log mel-spectrograms and labels.
             
         Returns:
             torch.Tensor: Padded batch of log mel-spectrograms.
             np.ndarray: Original lengths of each spectrogram in the batch.
             torch.Tensor: Labels corresponding to each spectrogram.
         """
-        # Find the maximum length in the batch
-        max_length = max(spectrogram.shape[1] for spectrogram, _ in batch)
+        # Find the maximum length in the batch (time frames in the spectrogram)
+        max_length = max(spectrogram.shape[2] for spectrogram, _ in batch)
         
-        # Initialize a padded batch with zeros
-        padded_batch = np.zeros((len(batch), batch[0][0].shape[0], max_length), dtype=np.float32)
+        # Initialize a padded batch with zeros (batch_size, n_mels, max_length)
+        padded_batch = np.zeros((len(batch), self.n_mels, max_length), dtype=np.float32)
         lengths = np.zeros(len(batch), dtype=np.int64)
         labels = []
 
         for i, (spectrogram, label) in enumerate(batch):
-            length = spectrogram.shape[1]
-            padded_batch[i, :, :length] = spectrogram
+            length = spectrogram.shape[2]
+            padded_batch[i, :, :length] = spectrogram  # Padding along the time axis (columns)
             lengths[i] = length
-            labels.append(label)
+            labels.append(torch.tensor(label, dtype=torch.long))
         
         labels = torch.stack(labels)
 
         return torch.tensor(padded_batch, dtype=torch.float32), lengths, labels
 
+
+    def _get_mel_spectrogram(self, audio_path):
+        """
+        Helper function to get mel-spectrogram from audio file.
+        """
+        waveform, sample_rate = torchaudio.load(audio_path, normalize=True)
+
+        # Ensure the sample rate matches
+        if sample_rate != self.sr:
+            resampler = Resample(orig_freq=sample_rate, new_freq=self.sr)
+            waveform = resampler(waveform)
+        
+        # Get Mel-spectrogram
+        mel_spectrogram = MelSpectrogram(sample_rate=self.sr, n_mels=self.n_mels, hop_length=self.hop_length)(waveform)
+        log_mel_spectrogram = torchaudio.transforms.AmplitudeToDB()(mel_spectrogram)
+        
+        return log_mel_spectrogram
+
     def __getitem__(self, idx):
-        # Load the audio file
+        # Load the audio file and compute the mel-spectrogram
         audio_path = self.audios[idx]
-        y, _ = lr.load(audio_path, sr=self.sr)
-        # Apply data augmentation if in training mode
-        if self.mode == 'train':
-            y = self.augmentation(torch.tensor(y).unsqueeze(0)).squeeze(0).numpy()
-        # Compute the log mel-spectrogram
-        mel_spectrogram = lr.feature.melspectrogram(y=y, sr=self.sr, n_mels=self.n_mels, hop_length=self.hop_length)
-        log_mel_spectrogram = lr.power_to_db(mel_spectrogram, ref=np.max)
+        log_mel_spectrogram = self._get_mel_spectrogram(audio_path)
+        
         label = self.labels[idx]
         
-        # covert to tensor
-        log_mel_spectrogram = torch.tensor(log_mel_spectrogram, dtype=torch.float32)
-        label = torch.tensor(label, dtype=torch.float32) if isinstance(label, np.ndarray) else torch.tensor(label, dtype=torch.long)
-
+        # Convert to tensor if needed
         return log_mel_spectrogram, label
 
-def create_dataloader(json_list, batch_size=32, shuffle=True, num_workers=4, sr=22050, n_mels=128, hop_length=512, is_onehot=False, mode='train'):
+
+def create_dataloader(json_list, batch_size=32, num_workers=8, sr=16000, n_mels=128, hop_length=512, is_onehot=False, mode='train'):
     dataset = AudioDataset(json_list=json_list, sr=sr, n_mels=n_mels, hop_length=hop_length, is_onehot=is_onehot, mode=mode)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=(mode=='train'), num_workers=num_workers, collate_fn=dataset.collate_fn)
     return dataloader
@@ -162,10 +175,7 @@ if __name__ == "__main__":
     print("Number of validation batches:", len(val_loader))
     print("Successfully created dataloaders.")
 
-    for batch in train_loader:
-        inputs, lengths, labels = batch
-        print(f"Input shape: {inputs.shape}, Lengths: {lengths}, Labels: {labels}")
-        break
+    
 
     print("DataLoader test completed.")
     print("All tests passed.")
