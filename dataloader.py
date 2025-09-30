@@ -169,3 +169,4 @@ if __name__ == "__main__":
 
     print("DataLoader test completed.")
     print("All tests passed.")
+    print("Dataloader module is working correctly.")
