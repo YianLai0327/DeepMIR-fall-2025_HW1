@@ -57,6 +57,7 @@ class AudioDataset(Dataset):
         print(f"reading from {json_list}")
 
         if not os.path.exists(json_list):
+
             raise ValueError(f"{json_list} is not a valid file path")
         
         with open(json_list, 'r') as f:
