@@ -9,6 +9,7 @@ from tqdm import tqdm
 from sklearn.decomposition import PCA
 from dataset.count_score_by_me import count_score
 import torch
+import joblib
 
 # build idx_to_class mapping
 from dataloader import class_mapping
@@ -137,16 +138,13 @@ train_probabilities = svm_classifier.predict_proba(train_features)
 
 # stores model weights
 import time
-model_pth = f'./models/task1_model/{int(time.time())}.npz'
-np.savez(model_pth,
-            svm_coef=svm_classifier.dual_coef_,
-            svm_intercept=svm_classifier.intercept_,
-            svm_support_vectors=svm_classifier.support_vectors_,
-            scaler_mean=scaler.mean_,
-            scaler_var=scaler.var_,
-            pca_components=pca.components_,
-            pca_mean=pca.mean_)
-print(f"\n✅ Model saved to {model_pth}")
+model_pth = f'./models/task1_model/{int(time.time())}.pkl'
+os.makedirs(os.path.dirname(model_pth), exist_ok=True)
+joblib.dump({
+    'svm_classifier': svm_classifier,
+    'scaler': scaler,
+    'pca': pca
+}, model_pth)
 
 with open('./dataset/artist20/train.json', 'r') as f:
     # only load pred of original samples, not augmented ones
