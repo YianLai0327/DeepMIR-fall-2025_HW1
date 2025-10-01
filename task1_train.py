@@ -111,3 +111,4 @@ for i, file_path in enumerate(val_file_paths[:10]):
     ])
     
     print(f"{file_number:<6} {true_label:<25} {top3_info}")
+
