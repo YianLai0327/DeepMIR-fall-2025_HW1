@@ -35,6 +35,7 @@ class MusicCNN(nn.Module):
         
     def forward(self, x):
         # x shape: (batch, 1, n_mels, time)
+        # print(f"Input shape: {x.shape}")
         
         x = F.relu(self.bn1(self.conv1(x)))
         x = self.pool1(x)
@@ -49,7 +50,7 @@ class MusicCNN(nn.Module):
         x = self.pool4(x)
         
         x = self.gap(x)
-        x = x.view(x.size(0), -1)
+        x = x.view(x.size(0), -1) # dim = (batch, 256)
         x = self.dropout(x)
         x = self.fc(x)
         

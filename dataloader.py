@@ -70,7 +70,7 @@ class AudioDataset(Dataset):
                 continue
             self.audios.append(real_audio_path)
             label = audio_path.split('/')[-3]
-            print(f"Processing {real_audio_path}, label: {label}")
+            # print(f"Processing {real_audio_path}, label: {label}")
             if is_onehot:
                 onehot = np.zeros(len(class_mapping), dtype=np.float32)
                 onehot[class_mapping[label]] = 1.0
@@ -114,13 +114,18 @@ class AudioDataset(Dataset):
         max_length = max(spectrogram.shape[2] for spectrogram, _ in batch)
         
         # Initialize a padded batch with zeros (batch_size, n_mels, max_length)
-        padded_batch = np.zeros((len(batch), self.n_mels, max_length), dtype=np.float32)
+        padded_batch = np.zeros((len(batch), 1, self.n_mels, max_length), dtype=np.float32)
         lengths = np.zeros(len(batch), dtype=np.int64)
         labels = []
 
         for i, (spectrogram, label) in enumerate(batch):
             length = spectrogram.shape[2]
-            padded_batch[i, :, :length] = spectrogram  # Padding along the time axis (columns)
+            if spectrogram.shape[0] != 1:
+                print(f"Warning: spectrogram has wrong shape {spectrogram.shape}")
+                if spectrogram.dim() == 2:  # (n_mels, time)
+                    spectrogram = spectrogram.unsqueeze(0)
+
+            padded_batch[i, :, :, :length] = spectrogram  # Padding along the time axis (columns)
             lengths[i] = length
             labels.append(torch.tensor(label, dtype=torch.long))
         
@@ -141,7 +146,7 @@ class AudioDataset(Dataset):
             waveform = resampler(waveform)
         
         # Get Mel-spectrogram
-        mel_spectrogram = MelSpectrogram(sample_rate=self.sr, n_mels=self.n_mels, hop_length=self.hop_length)(waveform)
+        mel_spectrogram = MelSpectrogram(sample_rate=self.sr, n_mels=self.n_mels, hop_length=self.hop_length, n_fft=2048)(waveform)
         log_mel_spectrogram = torchaudio.transforms.AmplitudeToDB()(mel_spectrogram)
         
         return log_mel_spectrogram

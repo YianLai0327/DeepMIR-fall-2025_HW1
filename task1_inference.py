@@ -36,9 +36,9 @@ idx_to_class = {v: k for k, v in class_mapping.items()}
 
 print("\nExtracting validation features...")
 Arg = argparse.ArgumentParser()
-Arg.add_argument('--audio_dir', type=str, default='./dataset/artist20/test', help='path to test directory')
+Arg.add_argument('--audio_dir', type=str, default='./dataset/artist20/train_val', help='path to test directory')
 Arg.add_argument('--model_path', type=str, default='./models/task1_model/1759330048.pkl', help='path to the trained model')
-Arg.add_argument('--output_json', type=str, default='./dataset/test_predictions.json', help='path to save the output JSON file')
+Arg.add_argument('--output_json', type=str, default='./dataset/check_predictions.json', help='path to save the output JSON file')
 
 args = Arg.parse_args()
 
