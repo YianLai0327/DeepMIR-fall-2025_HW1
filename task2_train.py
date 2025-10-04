@@ -4,6 +4,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from dataloader import create_dataloader
 from tqdm import tqdm, trange
+import os
 from task2_model import MusicCNN
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -11,39 +12,51 @@ print(f"Using device: {device}")
 
 # Hyperparameters
 n_epochs = 100
-batch_size = 8
+batch_size = 16
 learning_rate = 0.001
 weight_decay = 1e-4
 n_mels = 128
 hop_length = 512
 num_classes = 20
 accumulation_steps = 4  # For gradient accumulation
+chunk_duration = 30.0  # seconds
+chunk_overlap = 0.5  # 50% overlap for training
 
 # DataLoaders
 train_loader = create_dataloader(
-    json_list='./dataset/artist20/train.json',
+    json_list='./dataset/train_vocal.json',
     batch_size=batch_size,
     num_workers=4,
     sr=16000,
     n_mels=n_mels,
     hop_length=hop_length,
+    chunk_duration=chunk_duration,
+    overlap=chunk_overlap, 
     is_onehot=False,
     mode='train'
 )
-print(f"Number of training batches: {len(train_loader)}")
 
 val_loader = create_dataloader(
-    json_list='./dataset/artist20/val.json',
+    json_list='./dataset/val_vocal.json',
     batch_size=batch_size,
     num_workers=4,
     sr=16000,
     n_mels=n_mels,
     hop_length=hop_length,
+    chunk_duration=chunk_duration,
+    overlap=0.0, 
     is_onehot=False,
     mode='val'
 )
 print(f"Number of validation batches: {len(val_loader)}")
 print("Successfully created dataloaders.")
+
+print(f"Training batches: {len(train_loader)}")
+print(f"Validation batches: {len(val_loader)}")
+
+sample_batch = next(iter(train_loader))
+print(f"Sample batch shape: {sample_batch[0].shape}")
+print(f"Expected time frames: ~{int(chunk_duration * 16000 / hop_length)}")
 
 # Model
 print("Initializing model...")
@@ -71,6 +84,12 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode='max', factor=0.5, patience=5
 )
 
+#  Warmup scheduler
+# from torch.optim.lr_scheduler import LinearLR, SequentialLR
+# warmup_scheduler = LinearLR(optimizer, start_factor=0.1, total_iters=5)
+# main_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
+
+optimizer.zero_grad()
 # Training loop
 best_val_acc = 0.0
 
@@ -82,38 +101,44 @@ for epoch in train_pbar:
     train_loss = 0.0
     train_correct = 0
     train_total = 0
-    it = 0
     
     train_pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{n_epochs} - Train", leave=True)
-    for mel_spec, lengths, labels in train_pbar:
+    for it, (mel_spec, _, labels) in enumerate(train_pbar):
         mel_spec = mel_spec.to(device)
         labels = labels.to(device)
-        mel_spec = mel_spec.transpose(0, 1)
-        B, C, F, T = mel_spec.shape
-        if B != batch_size and C != 1:
+        # shape is (batch, 1, n_mels, time)
+        if mel_spec.shape[1] != 1:
             mel_spec = mel_spec.transpose(0, 1)
         # print(mel_spec.shape, labels.shape)  # Debugging line to check shapes
         
         # Forward
         outputs = model(mel_spec)
-        loss = criterion(outputs, labels)
+        loss = criterion(outputs, labels) / accumulation_steps  # Normalize loss for gradient accumulation
         
         # Backward
         loss.backward()
 
         # Gradient accumulation
         if (it + 1) % accumulation_steps == 0:
-            optimizer.zero_grad()
+            nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
+            optimizer.zero_grad()
         
         # Statistics
-        train_loss += loss.item()
+        train_loss += loss.item() * accumulation_steps
         _, predicted = torch.max(outputs.data, 1)
         train_total += labels.size(0)
         train_correct += (predicted == labels).sum().item()
-        it += 1
-
-        train_pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+        
+        train_pbar.set_postfix({
+            'loss': f'{loss.item() * accumulation_steps:.4f}',
+            'acc': f'{100 * train_correct / train_total:.2f}%'
+        })
+    
+    if (it + 1) % accumulation_steps != 0:
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        optimizer.step()
+        optimizer.zero_grad()
     
     train_acc = 100 * train_correct / train_total
     avg_train_loss = train_loss / len(train_loader)
@@ -126,9 +151,12 @@ for epoch in train_pbar:
     
     with torch.no_grad():
         val_pbar = tqdm(val_loader, desc=f"Epoch {epoch+1}/{n_epochs} - Val", leave=True)
-        for mel_spec, lengths, labels in val_pbar:
+        for mel_spec, _, labels in val_pbar:
             mel_spec = mel_spec.to(device)
             labels = labels.to(device)
+
+            if mel_spec.shape[1] != 1:
+                mel_spec = mel_spec.transpose(0, 1)
             
             outputs = model(mel_spec)
             loss = criterion(outputs, labels)
@@ -149,14 +177,25 @@ for epoch in train_pbar:
     scheduler.step(val_acc)
     
     # Save best model
-    if val_acc > best_val_acc:
+    
+    os.makedirs('./models/task2', exist_ok=True)
+    if val_acc > best_val_acc and val_acc > 60.0:  # Save only if val_acc > 60%
         best_val_acc = val_acc
         torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'val_acc': val_acc,
-        }, './models/best_cnn_model.pth')
+            'config': {
+                'chunk_duration': chunk_duration,
+                'n_mels': n_mels,
+                'hop_length': hop_length,
+            }
+        }, './models/task2/best_cnn_model.pth')
         print(f"Saved best model with val acc: {val_acc:.2f}%")
+
+    if optimizer.param_groups[0]['lr'] < 1e-6:
+        print("Learning rate too small, stopping training.")
+        break
 
 print(f"\nTraining completed. Best validation accuracy: {best_val_acc:.2f}%")

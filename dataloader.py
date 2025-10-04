@@ -33,26 +33,11 @@ class_mapping = {
     'u2': 19
 }
 
-def _build_items_from_json(json_list):
-    with open(json_list, "r") as f:
-        datas = json.load(f)
-    items = []
-    for p in datas:
-        real_p = p.replace('./', './dataset/artist20/')
-        if not os.path.isfile(real_p):
-            print(f"[warn] {real_p} not found, skip.")
-            continue
-        label_name = p.split('/')[-3]
-        items.append((real_p, class_mapping[label_name], os.path.basename(real_p)))
-    if not items:
-        raise ValueError(f"No audio files found in {json_list}")
-    return items
-
 class AudioDataset(Dataset):
     """
     Extract log mel-spectrogram features from audio files and create a dataset.
     """
-    def __init__(self, json_list, sr=22050, n_mels=128, hop_length=512, is_onehot=False, mode='train'):
+    def __init__(self, json_list, sr=22050, n_mels=128, hop_length=512, chunk_duration=10.0, overlap=0.5, is_onehot=False, mode='train'):
         """
         Args:
             file_list (list): List of paths to audio files.
@@ -61,57 +46,89 @@ class AudioDataset(Dataset):
             hop_length (int): Number of samples between successive frames.
         """
         self.json_list = json_list
-        self.audios = []
-        self.labels = []
+        # self.audios = []
+        # self.labels = []
         self.sr = sr
         self.n_mels = n_mels
         self.hop_length = hop_length
         self.mode = mode
+        self.chunk_duration = chunk_duration
+        self.overlap = overlap
+
+        self.chunk_samples = int(chunk_duration * sr)
+        self.hop_samples = int(self.chunk_samples * (1 - overlap))
+
+        self.chunks = []  # List to hold (audio_path, start_sample, label) tuples
+
+        print(f"Loading audio files from {json_list}")
+        print(f"Chunk duration: {chunk_duration}s, Overlap: {overlap}")
 
         print("Loading audio files and extracting features...")
         print(f"reading from {json_list}")
 
         if not os.path.exists(json_list):
-
             raise ValueError(f"{json_list} is not a valid file path")
         
         with open(json_list, 'r') as f:
             datas = json.load(f)
         
         for audio_path in datas:
-            real_audio_path = audio_path.replace('./', './dataset/artist20/')
+            # real_audio_path = audio_path.replace('./', './dataset/artist20/')
+            real_audio_path = audio_path
             if not os.path.isfile(real_audio_path):
                 print(f"Warning: {real_audio_path} does not exist. Skipping.")
                 continue
-            self.audios.append(real_audio_path)
-            label = audio_path.split('/')[-3]
+            # self.audios.append(real_audio_path)
+            label = audio_path.split('/')[-2].split('-')[0]
+            label = label[:-3]
+            label_idx = class_mapping[label]
             # print(f"Processing {real_audio_path}, label: {label}")
-            if is_onehot:
-                onehot = np.zeros(len(class_mapping), dtype=np.float32)
-                onehot[class_mapping[label]] = 1.0
-                self.labels.append(onehot)
-            else:
-                self.labels.append(class_mapping[label])
-        
-        if len(self.audios) == 0:
-            raise ValueError(f"No audio files found in {json_list}")
+            # if is_onehot:
+            #     onehot = np.zeros(len(class_mapping), dtype=np.float32)
+            #     onehot[class_mapping[label]] = 1.0
+            #     self.labels.append(onehot)
+            # else:
+            #     self.labels.append(class_mapping[label])
 
-        print(f"Found {len(self.audios)} audio files in {json_list}")
+            info = torchaudio.info(real_audio_path)
+            audio_length = info.num_frames
+
+            if mode == 'train':
+                # For training, extract overlapping chunks
+                for start in range(0, audio_length - self.chunk_samples + 1, self.hop_samples):
+                    self.chunks.append((real_audio_path, start, label_idx))
+                
+                # Make sure to include the last chunk if it doesn't fit perfectly
+                if audio_length > self.chunk_samples:
+                    last_start = audio_length - self.chunk_samples
+                    if last_start > 0 and (last_start not in [c[1] for c in self.chunks if c[0] == real_audio_path]):
+                        self.chunks.append((real_audio_path, last_start, label_idx))
+            else:
+                # For validation/test, just take non-overlapping chunks
+                num_chunks = max(1, audio_length // self.chunk_samples)
+                for i in range(num_chunks):
+                    start = i * self.chunk_samples
+                    if start + self.chunk_samples <= audio_length:
+                        self.chunks.append((real_audio_path, start, label_idx))
+        
+        # if len(self.audios) == 0:
+        #     raise ValueError(f"No audio files found in {json_list}")
+
+        print(f"Created {len(self.chunks)} chunks from {len(datas)} audio files")
+        print(f"Average chunks per song: {len(self.chunks) / len(datas):.2f}")
 
         if self.mode == 'train':
             # Apply data augmentation for training set
             transforms = [
-                # RandomApply([Noise(min_snr=0.3, max_snr=0.5)], p=0.3),
-                # RandomApply([Gain()], p=0.2),
-                # RandomApply([HighLowPass(sample_rate=self.sr)], p=0.8),
-                # RandomApply([Delay(sample_rate=self.sr)], p=0.5),
-                # RandomApply([PitchShift(n_samples=1, sample_rate=self.sr)], p=0.4),
-                # RandomApply([Reverb(sample_rate=self.sr)], p=0.3),
+                RandomApply([HighLowPass(sample_rate=self.sr)], p=0.5),
+                RandomApply([Gain()], p=0.3),
             ]
             self.augmentation = Compose(transforms=transforms)
+        else:
+            self.augmentation = None
 
     def __len__(self):
-        return len(self.audios)
+        return len(self.chunks)
 
     def collate_fn(self, batch):
         """
@@ -125,79 +142,106 @@ class AudioDataset(Dataset):
             np.ndarray: Original lengths of each spectrogram in the batch.
             torch.Tensor: Labels corresponding to each spectrogram.
         """
-        # Find the maximum length in the batch (time frames in the spectrogram)
-        max_length = max(spectrogram.shape[2] for spectrogram, _ in batch)
-        
-        # Initialize a padded batch with zeros (batch_size, n_mels, max_length)
-        padded_batch = np.zeros((len(batch), 1, self.n_mels, max_length), dtype=np.float32)
-        lengths = np.zeros(len(batch), dtype=np.int64)
+        spectrograms = []
         labels = []
-
-        for i, (spectrogram, label) in enumerate(batch):
-            length = spectrogram.shape[2]
-            if spectrogram.shape[0] != 1:
-                print(f"Warning: spectrogram has wrong shape {spectrogram.shape}")
-                if spectrogram.dim() == 2:  # (n_mels, time)
-                    spectrogram = spectrogram.unsqueeze(0)
-
-            padded_batch[i, :, :, :length] = spectrogram  # Padding along the time axis (columns)
-            lengths[i] = length
-            labels.append(torch.tensor(label, dtype=torch.long))
         
-        labels = torch.stack(labels)
-
-        return torch.tensor(padded_batch, dtype=torch.float32), lengths, labels
-
-
-    def _get_mel_spectrogram(self, audio_path):
-        """
-        Helper function to get mel-spectrogram from audio file.
-        """
-        waveform, sample_rate = torchaudio.load(audio_path, normalize=True)
-
-        # Ensure the sample rate matches
-        if sample_rate != self.sr:
-            resampler = Resample(orig_freq=sample_rate, new_freq=self.sr)
-            waveform = resampler(waveform)
+        for spectrogram, label in batch:
+            # 確保是3D: (1, n_mels, time)
+            if spectrogram.dim() == 2:
+                spectrogram = spectrogram.unsqueeze(0)
+            spectrograms.append(spectrogram)
+            labels.append(label)
         
-        # Get Mel-spectrogram
-        mel_spectrogram = MelSpectrogram(sample_rate=self.sr, n_mels=self.n_mels, hop_length=self.hop_length, n_fft=2048)(waveform)
+        # Stack所有spectrograms (batch, 1, n_mels, time)
+        spectrograms = torch.stack(spectrograms)
+        labels = torch.tensor(labels, dtype=torch.long)
+        
+        # 返回格式: (spectrograms, lengths, labels)
+        # lengths全部相同，所以可以省略或返回None
+        time_frames = spectrograms.shape[-1]
+        lengths = np.array([time_frames] * len(batch))
+        
+        return spectrograms, lengths, labels
+
+    def _get_mel_spectrogram(self, waveform):
+        """Get log mel-spectrogram from waveform."""
+        mel_spectrogram = MelSpectrogram(
+            sample_rate=self.sr, 
+            n_mels=self.n_mels, 
+            hop_length=self.hop_length, 
+            n_fft=2048
+        )(waveform)
         log_mel_spectrogram = torchaudio.transforms.AmplitudeToDB()(mel_spectrogram)
-        
         return log_mel_spectrogram
 
     def __getitem__(self, idx):
         # Load the audio file and compute the mel-spectrogram
-        audio_path = self.audios[idx]
-        log_mel_spectrogram = self._get_mel_spectrogram(audio_path)
+        audio_path, start_sample, label = self.chunks[idx]
         
-        label = self.labels[idx]
+        # Load the audio chunk
+        waveform, sample_rate = torchaudio.load(
+            audio_path,
+            frame_offset=start_sample,
+            num_frames=self.chunk_samples,
+            normalize=True
+        )
         
-        # Convert to tensor if needed
+        # Resample if needed
+        if sample_rate != self.sr:
+            resampler = Resample(orig_freq=sample_rate, new_freq=self.sr)
+            waveform = resampler(waveform)
+        
+        # Convert to mono if stereo
+        if waveform.shape[0] > 1:
+            waveform = torch.mean(waveform, dim=0, keepdim=True)
+        
+        # Apply augmentation if in training mode
+        if self.mode == 'train' and self.augmentation is not None:
+            waveform = self.augmentation(waveform)
+        
+        # calculate mel spectrogram
+        log_mel_spectrogram = self._get_mel_spectrogram(waveform)
+        
         return log_mel_spectrogram, label
 
 
-def create_dataloader(json_list, batch_size=32, num_workers=8, sr=16000, n_mels=128, hop_length=512, is_onehot=False, mode='train'):
-    dataset = AudioDataset(json_list=json_list, sr=sr, n_mels=n_mels, hop_length=hop_length, is_onehot=is_onehot, mode=mode)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=(mode=='train'), num_workers=num_workers, collate_fn=dataset.collate_fn)
+def create_dataloader(json_list, batch_size=32, num_workers=4, sr=16000, 
+                     n_mels=128, hop_length=512, chunk_duration=10.0, 
+                     overlap=0.5, is_onehot=False, mode='train'):
+    dataset = AudioDataset(json_list=json_list, sr=sr, 
+                           n_mels=n_mels, hop_length=hop_length,
+                           chunk_duration=chunk_duration, 
+                           overlap=overlap, 
+                           is_onehot=is_onehot, mode=mode)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=(mode=='train'), num_workers=num_workers, collate_fn=dataset.collate_fn, pin_memory=True)
     return dataloader
     
 
 if __name__ == "__main__":
     # Example usage
-    train_path = "dataset/artist20/train.json"
-    val_path = "dataset/artist20/val.json"
+    train_path = "dataset/train_vocal.json"
+    val_path = "dataset/val_vocal.json"
     if not os.path.exists(train_path) or not os.path.exists(val_path):
         raise FileNotFoundError("Dataset not found. Please ensure the dataset is available at the specified paths.")
-    train_loader = create_dataloader(json_list='./dataset/artist20/train.json', batch_size=16, mode='train')
-    val_loader = create_dataloader(json_list='./dataset/artist20/val.json', batch_size=16, mode='val')
-
-    print("Number of training batches:", len(train_loader))
-    print("Number of validation batches:", len(val_loader))
-    print("Successfully created dataloaders.")
-
     
-
-    print("DataLoader test completed.")
-    print("All tests passed.")
-    print("Dataloader module is working correctly.")
+    for chunk_dur in [10, 15, 30]:
+        print(f"\n{'='*50}")
+        print(f"Testing with chunk_duration={chunk_dur}s")
+        print(f"{'='*50}")
+        
+        train_loader = create_dataloader(
+            json_list=train_path, 
+            batch_size=16, 
+            chunk_duration=chunk_dur,
+            overlap=0.5,
+            mode='train'
+        )
+        
+        print("Number of training batches:", len(train_loader))
+        
+        for batch in train_loader:
+            inputs, lengths, labels = batch
+            print("Input shape:", inputs.shape)
+            print("Time frames:", inputs.shape[-1])
+            print("Estimated frames for full song (180s):", int(180 / chunk_dur) * inputs.shape[-1])
+            break

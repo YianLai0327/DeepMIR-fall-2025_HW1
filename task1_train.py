@@ -1,4 +1,3 @@
-from dataloader import AudioDataset
 import numpy as np
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
@@ -10,9 +9,61 @@ from sklearn.decomposition import PCA
 from dataset.count_score_by_me import count_score
 import torch
 import joblib
+import torchaudio
+from torchaudio.transforms import MelSpectrogram, Resample, AmplitudeToDB
 
 # build idx_to_class mapping
 from dataloader import class_mapping
+
+class AudioDataset:
+    """
+    Extract log mel-spectrogram features from audio files and create a dataset.
+    """
+    def __init__(self, json_list, sr=22050, n_mels=128, hop_length=512, chunk_duration=10.0, overlap=0.5, is_onehot=False, mode='train'):
+        """
+        Args:
+            file_list (list): List of paths to audio files.
+            sr (int): Sampling rate for loading audio.
+            n_mels (int): Number of mel bands to generate.
+            hop_length (int): Number of samples between successive frames.
+        """
+        self.json_list = json_list
+        self.sr = sr
+        self.n_mels = n_mels
+        self.hop_length = hop_length
+        self.mode = mode
+
+        with open(json_list, 'r') as f:
+            self.file_list = json.load(f)
+
+        self.mel_spectrogram_transform = MelSpectrogram(
+            sample_rate=sr,
+            n_mels=n_mels,
+            hop_length=hop_length,
+            n_fft=2048,
+        )
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def __getitem__(self, idx):
+        audio_path = self.file_list[idx]
+        real_audio_path = audio_path.replace('./', './dataset/artist20/')
+        if not os.path.isfile(real_audio_path):
+            raise FileNotFoundError(f"{real_audio_path} does not exist.")
+        
+        label = audio_path.split('/')[-3]
+        label_idx = class_mapping[label]
+
+        waveform, original_sr = torchaudio.load(real_audio_path)
+        if original_sr != self.sr:
+            resample_transform = Resample(orig_freq=original_sr, new_freq=self.sr)
+            waveform = resample_transform(waveform)
+
+        mel_spectrogram = self.mel_spectrogram_transform(waveform)
+        log_mel_spectrogram = AmplitudeToDB()(mel_spectrogram)
+
+        return log_mel_spectrogram, label_idx
 
 def extract_features_with_augmentation(dataset, n_augmentations=3):
     """
