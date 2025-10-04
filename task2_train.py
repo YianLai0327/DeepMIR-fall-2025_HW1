@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from dataloader import create_dataloader
+from dataloader import create_dataloader, MixedAudioDataset
 from tqdm import tqdm, trange
 import os
 from task2_model import MusicCNN
@@ -11,7 +11,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
 # Hyperparameters
-n_epochs = 100
+n_epochs = 50
 batch_size = 16
 learning_rate = 0.001
 weight_decay = 1e-4
@@ -23,21 +23,30 @@ chunk_duration = 30.0  # seconds
 chunk_overlap = 0.5  # 50% overlap for training
 
 # DataLoaders
-train_loader = create_dataloader(
-    json_list='./dataset/train_vocal.json',
-    batch_size=batch_size,
-    num_workers=4,
-    sr=16000,
-    n_mels=n_mels,
-    hop_length=hop_length,
-    chunk_duration=chunk_duration,
-    overlap=chunk_overlap, 
-    is_onehot=False,
+# train_loader = create_dataloader(
+#     json_list='./dataset/train_vocal.json',
+#     batch_size=batch_size,
+#     num_workers=4,
+#     sr=16000,
+#     n_mels=n_mels,
+#     hop_length=hop_length,
+#     chunk_duration=chunk_duration,
+#     overlap=chunk_overlap, 
+#     is_onehot=False,
+#     mode='train'
+# )
+train_loader = MixedAudioDataset.create_mixed_dataloader(
+    vocal_json="dataset/train_vocal.json",
+    full_json="dataset/artist20/train.json",
+    batch_size=16,
+    chunk_duration=30.0,
+    overlap=0.5,
+    vocal_ratio=0.5,
     mode='train'
 )
 
 val_loader = create_dataloader(
-    json_list='./dataset/val_vocal.json',
+    json_list='./dataset/artist20/val.json',
     batch_size=batch_size,
     num_workers=4,
     sr=16000,
@@ -63,19 +72,19 @@ print("Initializing model...")
 model = MusicCNN(n_classes=num_classes, n_mels=n_mels).to(device)
 
 print(f"Number of model parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
-from collections import Counter
-train_labels = []
-for _, _, labels in train_loader:
-    train_labels.extend(labels.numpy())
+# from collections import Counter
+# train_labels = []
+# for _, _, labels in train_loader:
+#     train_labels.extend(labels.numpy())
 
-class_counts = Counter(train_labels)
-total = len(train_labels)
-class_weights = torch.tensor([total / class_counts[i] for i in range(num_classes)]).to(device)
+# class_counts = Counter(train_labels)
+# total = len(train_labels)
+# class_weights = torch.tensor([total / class_counts[i] for i in range(num_classes)]).to(device)
 
 # Loss
 print("Setting up loss function...")
-criterion = nn.CrossEntropyLoss(weight=class_weights)
-# criterion = nn.CrossEntropyLoss()
+# criterion = nn.CrossEntropyLoss(weight=class_weights)
+criterion = nn.CrossEntropyLoss()
 
 # Optimizer and Scheduler
 print("Setting up optimizer and scheduler...")
@@ -94,8 +103,8 @@ optimizer.zero_grad()
 best_val_acc = 0.0
 
 print("Starting training...")
-train_pbar = trange(n_epochs, desc="Overall Training Progress", leave=True)
-for epoch in train_pbar:
+epoch_pbar = trange(n_epochs, desc="Overall Training Progress", leave=True)
+for epoch in epoch_pbar:
     # Training
     model.train()
     train_loss = 0.0
@@ -107,7 +116,9 @@ for epoch in train_pbar:
         mel_spec = mel_spec.to(device)
         labels = labels.to(device)
         # shape is (batch, 1, n_mels, time)
-        if mel_spec.shape[1] != 1:
+        if mel_spec.dim() == 3:
+            mel_spec = mel_spec.unsqueeze(1)  # (batch, n_mels, time) -> (batch, 1, n_mels, time)
+        elif mel_spec.shape[1] != 1:
             mel_spec = mel_spec.transpose(0, 1)
         # print(mel_spec.shape, labels.shape)  # Debugging line to check shapes
         
@@ -169,9 +180,10 @@ for epoch in train_pbar:
     val_acc = 100 * val_correct / val_total
     avg_val_loss = val_loss / len(val_loader)
     
-    print(f"\nEpoch {epoch+1}/{n_epochs}")
-    print(f"Train Loss: {avg_train_loss:.4f}, Train Acc: {train_acc:.2f}%")
-    print(f"Val Loss: {avg_val_loss:.4f}, Val Acc: {val_acc:.2f}%")
+    print(f"\nEpoch {epoch+1}/{n_epochs}:")
+    print(f"  Train - Loss: {avg_train_loss:.4f}, Acc: {train_acc:.2f}%")
+    print(f"  Val   - Loss: {avg_val_loss:.4f}, Acc: {val_acc:.2f}%")
+    print(f"  LR: {optimizer.param_groups[0]['lr']:.6f}")
     
     # Learning rate scheduling
     scheduler.step(val_acc)

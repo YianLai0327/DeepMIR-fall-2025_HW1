@@ -196,6 +196,15 @@ class AudioDataset(Dataset):
         # Convert to mono if stereo
         if waveform.shape[0] > 1:
             waveform = torch.mean(waveform, dim=0, keepdim=True)
+
+        if waveform.shape[1] != self.chunk_samples:
+            if waveform.shape[1] < self.chunk_samples:
+                # Pad
+                padding = self.chunk_samples - waveform.shape[1]
+                waveform = torch.nn.functional.pad(waveform, (0, padding))
+            else:
+                # Crop
+                waveform = waveform[:, :self.chunk_samples]
         
         # Apply augmentation if in training mode
         if self.mode == 'train' and self.augmentation is not None:
@@ -280,16 +289,24 @@ class MixedAudioDataset:
             weights = [vocal_weight] * len(vocal_dataset) + \
                      [full_weight] * len(full_dataset)
             
-            sampler = WeightedRandomSampler(
-                weights=weights,
-                num_samples=len(combined_dataset),
-                replacement=True
-            )
+            # sampler = WeightedRandomSampler(
+            #     weights=weights,
+            #     num_samples=len(combined_dataset),
+            #     replacement=True
+            # )
             
+            # dataloader = torch.utils.data.DataLoader(
+            #     combined_dataset,
+            #     batch_size=batch_size,
+            #     sampler=sampler,
+            #     num_workers=4,
+            #     collate_fn=vocal_dataset.collate_fn,
+            #     pin_memory=True
+            # )
             dataloader = torch.utils.data.DataLoader(
                 combined_dataset,
                 batch_size=batch_size,
-                sampler=sampler,
+                shuffle=True,
                 num_workers=4,
                 collate_fn=vocal_dataset.collate_fn,
                 pin_memory=True
@@ -357,4 +374,27 @@ if __name__ == "__main__":
     #         print("Estimated frames for full song (180s):", int(180 / chunk_dur) * inputs.shape[-1])
     #         break
 
-    train_loader
+    train_loader = MixedAudioDataset.create_mixed_dataloader(
+        vocal_json="dataset/train_vocal.json",
+        full_json="dataset/artist20/train.json",
+        batch_size=16,
+        chunk_duration=30.0,
+        overlap=0.5,
+        vocal_ratio=0.5,
+        mode='train'
+    )
+
+    val_loader = create_dataloader(
+        json_list=val_path,
+        batch_size=16,
+        chunk_duration=30.0,
+        overlap=0.0,
+        mode='val'
+    )
+
+    for batch in train_loader:
+        inputs, lengths, labels = batch
+        print("Train Input shape:", inputs.shape)
+        print("Train Time frames:", inputs.shape[-1])
+        print("Estimated frames for full song (180s):", int(180 / 30) * inputs.shape[-1])
+        break

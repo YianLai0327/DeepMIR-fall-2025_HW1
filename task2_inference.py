@@ -192,12 +192,13 @@ class SingerClassifier:
 
         for audio_path in tqdm(audio_paths, desc="Batch Predicting"):
             label = None
+            is_vocal = 'vocal' in audio_path
             if "test" not in audio_path:
-                label = audio_path.split('/')[-2].split('-')[0][:-3]
+                label = audio_path.split('/')[-2].split('-')[0][:-3] if is_vocal else audio_path.split('/')[-3]
                 # label = label[:-3]
                 print(f"Ground truth: {label}")
 
-            real_path = audio_path
+            real_path = audio_path if is_vocal else audio_path.replace('./', './dataset/artist20/')
             # real_path = audio_path.replace('./', './dataset/artist20/')
             print(f"Processing: {real_path}")
             audio_name = real_path.split('/')[-1].split('.')[0]
@@ -229,7 +230,7 @@ class SingerClassifier:
 
 if __name__ == "__main__":
     classifier = SingerClassifier(
-        model_path='./models/task2/vocal_only.pth',
+        model_path='./models/task2/full_mix_w_vocal.pth',
         chunk_duration=30.0,  # 與訓練時一致
         stride_ratio=0.5,     # 50% 重疊
         device='cuda'
@@ -255,10 +256,10 @@ if __name__ == "__main__":
     print("="*60)
     
     import json
-    input_audios = "./dataset/val_vocal.json"
+    input_audios = "./dataset/artist20/val.json"
 
-    top1_pred_json = "./dataset/task2_val_top1_predictions.json"
-    top3_pred_json = "./dataset/task2_val_top3_predictions.json"
+    top1_pred_json = "./dataset/task2_val_top1_predictions_full_w_vocal.json"
+    top3_pred_json = "./dataset/task2_val_top3_predictions_full_w_vocal.json"
 
     with open(input_audios, 'r') as f:
         datas = json.load(f)
@@ -284,7 +285,8 @@ if __name__ == "__main__":
         import matplotlib.pyplot as plt
         import seaborn as sns
 
-        gt_labels = [p.split('/')[-2].split('-')[0][:-3] for p in datas]
+        # gt_labels = [p.split('/')[-2].split('-')[0][:-3] for p in datas]
+        gt_labels = [p.split('/')[-3] for p in datas]
         cm = confusion_matrix(gt_labels, top1_result, labels=classifier.class_names)
 
         plt.figure(figsize=(12, 10))
