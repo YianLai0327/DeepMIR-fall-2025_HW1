@@ -8,6 +8,7 @@ import json
 from tqdm import tqdm
 import torchaudio
 from torchaudio.transforms import MelSpectrogram, Resample
+from torch.utils.data import Dataset, ConcatDataset
 
 # mapping class names to integers
 class_mapping = {
@@ -71,24 +72,25 @@ class AudioDataset(Dataset):
         
         with open(json_list, 'r') as f:
             datas = json.load(f)
+
+        is_vocal = 'vocal' in json_list
         
         for audio_path in datas:
-            # real_audio_path = audio_path.replace('./', './dataset/artist20/')
-            real_audio_path = audio_path
+            real_audio_path = audio_path if is_vocal else audio_path.replace('./', './dataset/artist20/')
+
             if not os.path.isfile(real_audio_path):
                 print(f"Warning: {real_audio_path} does not exist. Skipping.")
                 continue
-            # self.audios.append(real_audio_path)
-            label = audio_path.split('/')[-2].split('-')[0]
-            label = label[:-3]
-            label_idx = class_mapping[label]
-            # print(f"Processing {real_audio_path}, label: {label}")
-            # if is_onehot:
-            #     onehot = np.zeros(len(class_mapping), dtype=np.float32)
-            #     onehot[class_mapping[label]] = 1.0
-            #     self.labels.append(onehot)
-            # else:
-            #     self.labels.append(class_mapping[label])
+
+            if is_vocal:
+                label = audio_path.split('/')[-2].split('-')[0]
+                label = label[:-3]
+                label_idx = class_mapping[label]
+            else: 
+                label = audio_path.split('/')[-3]
+                label_idx = class_mapping[label]
+
+            print(f"Processing {real_audio_path}, label: {label}")
 
             info = torchaudio.info(real_audio_path)
             audio_length = info.num_frames
@@ -205,6 +207,115 @@ class AudioDataset(Dataset):
         return log_mel_spectrogram, label
 
 
+class MixedAudioDataset:
+    """
+    Create a mixed dataloader combining vocal-only and full mix datasets.
+    """
+    @staticmethod
+    def create_mixed_dataloader(
+        vocal_json, 
+        full_json, 
+        batch_size=16,
+        sr=16000,
+        n_mels=128,
+        hop_length=512,
+        chunk_duration=30.0,
+        overlap=0.5,
+        vocal_ratio=0.5,  # Vocal 數據的比例
+        mode='train'
+    ):
+        """
+        Args:
+            vocal_json (str): Path to JSON file for vocal-only dataset.
+            full_json (str): Path to JSON file for full mix dataset.
+            batch_size (int): Batch size for DataLoader.
+            sr (int): Sampling rate.
+            n_mels (int): Number of mel bands.
+            hop_length (int): Hop length for mel-spectrogram.
+            chunk_duration (float): Duration of each audio chunk in seconds.
+            overlap (float): Overlap ratio between chunks.
+            vocal_ratio (float): Proportion of vocal data in each batch.
+            mode (str): 'train' or 'val'.
+        """
+        
+        # 創建 vocal dataset
+        vocal_dataset = AudioDataset(
+            json_list=vocal_json,
+            sr=sr,
+            n_mels=n_mels,
+            hop_length=hop_length,
+            chunk_duration=chunk_duration,
+            overlap=overlap if mode == 'train' else 0.0,
+            mode=mode
+        )
+        
+        # 創建 full mix dataset
+        full_dataset = AudioDataset(
+            json_list=full_json,
+            sr=sr,
+            n_mels=n_mels,
+            hop_length=hop_length,
+            chunk_duration=chunk_duration,
+            overlap=overlap if mode == 'train' else 0.0,
+            mode=mode
+        )
+        
+        print(f"\n{'='*60}")
+        print(f"Mixed Dataset Statistics ({mode}):")
+        print(f"  Vocal chunks: {len(vocal_dataset)}")
+        print(f"  Full mix chunks: {len(full_dataset)}")
+        
+        # 根據 ratio 調整採樣
+        if mode == 'train':
+            # 方法 1: Concat 兩個 dataset（簡單）
+            combined_dataset = ConcatDataset([vocal_dataset, full_dataset])
+            
+            # 方法 2: 使用 WeightedRandomSampler 控制比例（更精確）
+            from torch.utils.data import WeightedRandomSampler
+            
+            # 為每個樣本分配權重
+            vocal_weight = vocal_ratio
+            full_weight = 1 - vocal_ratio
+            
+            weights = [vocal_weight] * len(vocal_dataset) + \
+                     [full_weight] * len(full_dataset)
+            
+            sampler = WeightedRandomSampler(
+                weights=weights,
+                num_samples=len(combined_dataset),
+                replacement=True
+            )
+            
+            dataloader = torch.utils.data.DataLoader(
+                combined_dataset,
+                batch_size=batch_size,
+                sampler=sampler,
+                num_workers=4,
+                collate_fn=vocal_dataset.collate_fn,
+                pin_memory=True
+            )
+            
+            print(f"  Combined: {len(combined_dataset)} chunks")
+            print(f"  Vocal ratio: {vocal_ratio:.0%}")
+            print(f"{'='*60}\n")
+            
+        else:
+            # 驗證集：簡單 concat
+            combined_dataset = ConcatDataset([vocal_dataset, full_dataset])
+            dataloader = torch.utils.data.DataLoader(
+                combined_dataset,
+                batch_size=batch_size,
+                shuffle=False,
+                num_workers=4,
+                collate_fn=vocal_dataset.collate_fn,
+                pin_memory=True
+            )
+            print(f"  Combined: {len(combined_dataset)} chunks")
+            print(f"{'='*60}\n")
+        
+        return dataloader
+
+
 def create_dataloader(json_list, batch_size=32, num_workers=4, sr=16000, 
                      n_mels=128, hop_length=512, chunk_duration=10.0, 
                      overlap=0.5, is_onehot=False, mode='train'):
@@ -224,24 +335,26 @@ if __name__ == "__main__":
     if not os.path.exists(train_path) or not os.path.exists(val_path):
         raise FileNotFoundError("Dataset not found. Please ensure the dataset is available at the specified paths.")
     
-    for chunk_dur in [10, 15, 30]:
-        print(f"\n{'='*50}")
-        print(f"Testing with chunk_duration={chunk_dur}s")
-        print(f"{'='*50}")
+    # for chunk_dur in [10, 15, 30]:
+    #     print(f"\n{'='*50}")
+    #     print(f"Testing with chunk_duration={chunk_dur}s")
+    #     print(f"{'='*50}")
         
-        train_loader = create_dataloader(
-            json_list=train_path, 
-            batch_size=16, 
-            chunk_duration=chunk_dur,
-            overlap=0.5,
-            mode='train'
-        )
+    #     train_loader = create_dataloader(
+    #         json_list=train_path, 
+    #         batch_size=16, 
+    #         chunk_duration=chunk_dur,
+    #         overlap=0.5,
+    #         mode='train'
+    #     )
         
-        print("Number of training batches:", len(train_loader))
+    #     print("Number of training batches:", len(train_loader))
         
-        for batch in train_loader:
-            inputs, lengths, labels = batch
-            print("Input shape:", inputs.shape)
-            print("Time frames:", inputs.shape[-1])
-            print("Estimated frames for full song (180s):", int(180 / chunk_dur) * inputs.shape[-1])
-            break
+    #     for batch in train_loader:
+    #         inputs, lengths, labels = batch
+    #         print("Input shape:", inputs.shape)
+    #         print("Time frames:", inputs.shape[-1])
+    #         print("Estimated frames for full song (180s):", int(180 / chunk_dur) * inputs.shape[-1])
+    #         break
+
+    train_loader

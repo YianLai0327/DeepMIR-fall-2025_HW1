@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from dataloader import create_dataloader
+# from dataloader import create_dataloader
 from tqdm import tqdm, trange
 import os
 from task2_model import MusicCNN
@@ -15,18 +15,9 @@ hop_length = 512
 num_classes = 20
 chunk_duration = 30.0  # seconds
 
-val_loader = create_dataloader(
-    json_list='./dataset/val_vocal.json',
-    batch_size=batch_size,
-    num_workers=4,
-    sr=16000,
-    n_mels=n_mels,
-    hop_length=hop_length,
-    chunk_duration=chunk_duration,
-    overlap=0.0, 
-    is_onehot=False,
-    mode='val'
-)
+
+
+result = {} # stores top1 and top3 predictions of 
 
 model = MusicCNN(n_classes=num_classes, n_mels=n_mels).to(device)
 # Load the best model
