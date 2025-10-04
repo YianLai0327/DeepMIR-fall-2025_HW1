@@ -125,7 +125,8 @@ for epoch in train_pbar:
     val_total = 0
     
     with torch.no_grad():
-        for mel_spec, lengths, labels in tqdm(val_loader, desc=f"Epoch {epoch+1}/{n_epochs} - Val"):
+        val_pbar = tqdm(val_loader, desc=f"Epoch {epoch+1}/{n_epochs} - Val", leave=True)
+        for mel_spec, lengths, labels in val_pbar:
             mel_spec = mel_spec.to(device)
             labels = labels.to(device)
             

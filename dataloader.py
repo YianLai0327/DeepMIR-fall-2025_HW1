@@ -33,6 +33,21 @@ class_mapping = {
     'u2': 19
 }
 
+def _build_items_from_json(json_list):
+    with open(json_list, "r") as f:
+        datas = json.load(f)
+    items = []
+    for p in datas:
+        real_p = p.replace('./', './dataset/artist20/')
+        if not os.path.isfile(real_p):
+            print(f"[warn] {real_p} not found, skip.")
+            continue
+        label_name = p.split('/')[-3]
+        items.append((real_p, class_mapping[label_name], os.path.basename(real_p)))
+    if not items:
+        raise ValueError(f"No audio files found in {json_list}")
+    return items
+
 class AudioDataset(Dataset):
     """
     Extract log mel-spectrogram features from audio files and create a dataset.
