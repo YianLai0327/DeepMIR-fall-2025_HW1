@@ -192,13 +192,13 @@ class SingerClassifier:
 
         for audio_path in tqdm(audio_paths, desc="Batch Predicting"):
             label = None
-            is_vocal = 'vocal' in audio_path
+            is_full_mix = 'vocal' not in audio_path
             if "test" not in audio_path:
-                label = audio_path.split('/')[-2].split('-')[0][:-3] if is_vocal else audio_path.split('/')[-3]
+                label = audio_path.split('/')[-3] if is_full_mix else audio_path.split('/')[-2].split('-')[0][:-3]
                 # label = label[:-3]
                 print(f"Ground truth: {label}")
 
-            real_path = audio_path if is_vocal else audio_path.replace('./', './dataset/artist20/')
+            real_path = audio_path if not is_full_mix else audio_path.replace('./', './dataset/artist20/')
             # real_path = audio_path.replace('./', './dataset/artist20/')
             print(f"Processing: {real_path}")
             audio_name = real_path.split('/')[-1].split('.')[0]
@@ -256,10 +256,10 @@ if __name__ == "__main__":
     print("="*60)
     
     import json
-    input_audios = "./dataset/artist20/val.json"
+    input_audios = "./dataset/artist20/test.json"
 
-    top1_pred_json = "./dataset/task2_val_top1_predictions_full_w_vocal.json"
-    top3_pred_json = "./dataset/task2_val_top3_predictions_full_w_vocal.json"
+    top1_pred_json = "./dataset/task2_test_top1_predictions_full_w_vocal.json"
+    top3_pred_json = "./dataset/task2_test_top3_predictions_full_w_vocal.json"
 
     with open(input_audios, 'r') as f:
         datas = json.load(f)
@@ -269,6 +269,8 @@ if __name__ == "__main__":
     if top1_acc > 0 and top3_acc > 0:
         print(f"Top-1 Accuracy: {top1_acc:.2%}")
         print(f"Top-3 Accuracy: {top3_acc:.2%}")
+    else:
+        print("inferencing test set without ground truth, finished w/o accuracy and confusion matrix calculation.")
 
     with open(top1_pred_json, 'w') as f:
         json.dump(top1_result, f, indent=4)
