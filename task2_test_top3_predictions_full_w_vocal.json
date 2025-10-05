@@ -1,0 +1,1167 @@
+{
+    "001": [
+        "prince",
+        "depeche_mode",
+        "madonna"
+    ],
+    "002": [
+        "steely_dan",
+        "prince",
+        "dave_matthews_band"
+    ],
+    "003": [
+        "beatles",
+        "radiohead",
+        "queen"
+    ],
+    "004": [
+        "madonna",
+        "tori_amos",
+        "roxette"
+    ],
+    "005": [
+        "queen",
+        "fleetwood_mac",
+        "aerosmith"
+    ],
+    "006": [
+        "depeche_mode",
+        "metallica",
+        "u2"
+    ],
+    "007": [
+        "suzanne_vega",
+        "dave_matthews_band",
+        "madonna"
+    ],
+    "008": [
+        "queen",
+        "prince",
+        "cure"
+    ],
+    "009": [
+        "tori_amos",
+        "u2",
+        "radiohead"
+    ],
+    "010": [
+        "depeche_mode",
+        "metallica",
+        "dave_matthews_band"
+    ],
+    "011": [
+        "metallica",
+        "green_day",
+        "roxette"
+    ],
+    "012": [
+        "creedence_clearwater_revival",
+        "u2",
+        "beatles"
+    ],
+    "013": [
+        "depeche_mode",
+        "fleetwood_mac",
+        "roxette"
+    ],
+    "014": [
+        "led_zeppelin",
+        "queen",
+        "aerosmith"
+    ],
+    "015": [
+        "roxette",
+        "prince",
+        "madonna"
+    ],
+    "016": [
+        "green_day",
+        "u2",
+        "garth_brooks"
+    ],
+    "017": [
+        "madonna",
+        "prince",
+        "suzanne_vega"
+    ],
+    "018": [
+        "garth_brooks",
+        "tori_amos",
+        "suzanne_vega"
+    ],
+    "019": [
+        "radiohead",
+        "aerosmith",
+        "metallica"
+    ],
+    "020": [
+        "green_day",
+        "u2",
+        "roxette"
+    ],
+    "021": [
+        "prince",
+        "depeche_mode",
+        "fleetwood_mac"
+    ],
+    "022": [
+        "led_zeppelin",
+        "aerosmith",
+        "creedence_clearwater_revival"
+    ],
+    "023": [
+        "radiohead",
+        "madonna",
+        "queen"
+    ],
+    "024": [
+        "madonna",
+        "roxette",
+        "depeche_mode"
+    ],
+    "025": [
+        "metallica",
+        "prince",
+        "green_day"
+    ],
+    "026": [
+        "radiohead",
+        "madonna",
+        "depeche_mode"
+    ],
+    "027": [
+        "radiohead",
+        "metallica",
+        "green_day"
+    ],
+    "028": [
+        "queen",
+        "u2",
+        "fleetwood_mac"
+    ],
+    "029": [
+        "u2",
+        "prince",
+        "radiohead"
+    ],
+    "030": [
+        "cure",
+        "depeche_mode",
+        "prince"
+    ],
+    "031": [
+        "fleetwood_mac",
+        "depeche_mode",
+        "roxette"
+    ],
+    "032": [
+        "garth_brooks",
+        "cure",
+        "steely_dan"
+    ],
+    "033": [
+        "tori_amos",
+        "radiohead",
+        "u2"
+    ],
+    "034": [
+        "suzanne_vega",
+        "garth_brooks",
+        "depeche_mode"
+    ],
+    "035": [
+        "steely_dan",
+        "prince",
+        "dave_matthews_band"
+    ],
+    "036": [
+        "beatles",
+        "radiohead",
+        "led_zeppelin"
+    ],
+    "037": [
+        "prince",
+        "fleetwood_mac",
+        "suzanne_vega"
+    ],
+    "038": [
+        "prince",
+        "beatles",
+        "suzanne_vega"
+    ],
+    "039": [
+        "garth_brooks",
+        "creedence_clearwater_revival",
+        "fleetwood_mac"
+    ],
+    "040": [
+        "cure",
+        "u2",
+        "depeche_mode"
+    ],
+    "041": [
+        "suzanne_vega",
+        "led_zeppelin",
+        "tori_amos"
+    ],
+    "042": [
+        "green_day",
+        "metallica",
+        "radiohead"
+    ],
+    "043": [
+        "madonna",
+        "prince",
+        "tori_amos"
+    ],
+    "044": [
+        "dave_matthews_band",
+        "cure",
+        "roxette"
+    ],
+    "045": [
+        "beatles",
+        "queen",
+        "led_zeppelin"
+    ],
+    "046": [
+        "madonna",
+        "tori_amos",
+        "prince"
+    ],
+    "047": [
+        "dave_matthews_band",
+        "cure",
+        "radiohead"
+    ],
+    "048": [
+        "tori_amos",
+        "u2",
+        "radiohead"
+    ],
+    "049": [
+        "creedence_clearwater_revival",
+        "beatles",
+        "led_zeppelin"
+    ],
+    "050": [
+        "tori_amos",
+        "madonna",
+        "roxette"
+    ],
+    "051": [
+        "cure",
+        "suzanne_vega",
+        "dave_matthews_band"
+    ],
+    "052": [
+        "cure",
+        "dave_matthews_band",
+        "steely_dan"
+    ],
+    "053": [
+        "led_zeppelin",
+        "aerosmith",
+        "queen"
+    ],
+    "054": [
+        "dave_matthews_band",
+        "led_zeppelin",
+        "cure"
+    ],
+    "055": [
+        "tori_amos",
+        "radiohead",
+        "prince"
+    ],
+    "056": [
+        "depeche_mode",
+        "cure",
+        "u2"
+    ],
+    "057": [
+        "dave_matthews_band",
+        "radiohead",
+        "cure"
+    ],
+    "058": [
+        "dave_matthews_band",
+        "radiohead",
+        "garth_brooks"
+    ],
+    "059": [
+        "depeche_mode",
+        "queen",
+        "u2"
+    ],
+    "060": [
+        "dave_matthews_band",
+        "radiohead",
+        "green_day"
+    ],
+    "061": [
+        "garth_brooks",
+        "creedence_clearwater_revival",
+        "cure"
+    ],
+    "062": [
+        "garth_brooks",
+        "metallica",
+        "cure"
+    ],
+    "063": [
+        "creedence_clearwater_revival",
+        "led_zeppelin",
+        "dave_matthews_band"
+    ],
+    "064": [
+        "fleetwood_mac",
+        "roxette",
+        "tori_amos"
+    ],
+    "065": [
+        "dave_matthews_band",
+        "green_day",
+        "metallica"
+    ],
+    "066": [
+        "prince",
+        "u2",
+        "led_zeppelin"
+    ],
+    "067": [
+        "green_day",
+        "u2",
+        "aerosmith"
+    ],
+    "068": [
+        "depeche_mode",
+        "beatles",
+        "prince"
+    ],
+    "069": [
+        "metallica",
+        "green_day",
+        "roxette"
+    ],
+    "070": [
+        "roxette",
+        "creedence_clearwater_revival",
+        "u2"
+    ],
+    "071": [
+        "roxette",
+        "suzanne_vega",
+        "dave_matthews_band"
+    ],
+    "072": [
+        "depeche_mode",
+        "prince",
+        "led_zeppelin"
+    ],
+    "073": [
+        "metallica",
+        "prince",
+        "green_day"
+    ],
+    "074": [
+        "creedence_clearwater_revival",
+        "fleetwood_mac",
+        "led_zeppelin"
+    ],
+    "075": [
+        "queen",
+        "radiohead",
+        "fleetwood_mac"
+    ],
+    "076": [
+        "suzanne_vega",
+        "dave_matthews_band",
+        "steely_dan"
+    ],
+    "077": [
+        "prince",
+        "green_day",
+        "metallica"
+    ],
+    "078": [
+        "depeche_mode",
+        "u2",
+        "aerosmith"
+    ],
+    "079": [
+        "steely_dan",
+        "prince",
+        "garth_brooks"
+    ],
+    "080": [
+        "suzanne_vega",
+        "madonna",
+        "tori_amos"
+    ],
+    "081": [
+        "roxette",
+        "madonna",
+        "fleetwood_mac"
+    ],
+    "082": [
+        "green_day",
+        "u2",
+        "aerosmith"
+    ],
+    "083": [
+        "beatles",
+        "prince",
+        "creedence_clearwater_revival"
+    ],
+    "084": [
+        "beatles",
+        "radiohead",
+        "queen"
+    ],
+    "085": [
+        "radiohead",
+        "u2",
+        "metallica"
+    ],
+    "086": [
+        "led_zeppelin",
+        "beatles",
+        "queen"
+    ],
+    "087": [
+        "prince",
+        "queen",
+        "fleetwood_mac"
+    ],
+    "088": [
+        "depeche_mode",
+        "suzanne_vega",
+        "fleetwood_mac"
+    ],
+    "089": [
+        "garth_brooks",
+        "cure",
+        "u2"
+    ],
+    "090": [
+        "roxette",
+        "prince",
+        "suzanne_vega"
+    ],
+    "091": [
+        "beatles",
+        "queen",
+        "radiohead"
+    ],
+    "092": [
+        "prince",
+        "u2",
+        "aerosmith"
+    ],
+    "093": [
+        "dave_matthews_band",
+        "garth_brooks",
+        "cure"
+    ],
+    "094": [
+        "green_day",
+        "u2",
+        "radiohead"
+    ],
+    "095": [
+        "queen",
+        "prince",
+        "madonna"
+    ],
+    "096": [
+        "beatles",
+        "fleetwood_mac",
+        "led_zeppelin"
+    ],
+    "097": [
+        "beatles",
+        "led_zeppelin",
+        "creedence_clearwater_revival"
+    ],
+    "098": [
+        "green_day",
+        "u2",
+        "aerosmith"
+    ],
+    "099": [
+        "depeche_mode",
+        "dave_matthews_band",
+        "prince"
+    ],
+    "100": [
+        "garth_brooks",
+        "radiohead",
+        "queen"
+    ],
+    "101": [
+        "cure",
+        "radiohead",
+        "depeche_mode"
+    ],
+    "102": [
+        "beatles",
+        "prince",
+        "u2"
+    ],
+    "103": [
+        "led_zeppelin",
+        "queen",
+        "aerosmith"
+    ],
+    "104": [
+        "beatles",
+        "fleetwood_mac",
+        "queen"
+    ],
+    "105": [
+        "radiohead",
+        "garth_brooks",
+        "queen"
+    ],
+    "106": [
+        "tori_amos",
+        "radiohead",
+        "prince"
+    ],
+    "107": [
+        "led_zeppelin",
+        "garth_brooks",
+        "dave_matthews_band"
+    ],
+    "108": [
+        "fleetwood_mac",
+        "roxette",
+        "garth_brooks"
+    ],
+    "109": [
+        "suzanne_vega",
+        "garth_brooks",
+        "dave_matthews_band"
+    ],
+    "110": [
+        "u2",
+        "prince",
+        "dave_matthews_band"
+    ],
+    "111": [
+        "tori_amos",
+        "madonna",
+        "roxette"
+    ],
+    "112": [
+        "roxette",
+        "prince",
+        "depeche_mode"
+    ],
+    "113": [
+        "creedence_clearwater_revival",
+        "led_zeppelin",
+        "madonna"
+    ],
+    "114": [
+        "tori_amos",
+        "roxette",
+        "madonna"
+    ],
+    "115": [
+        "steely_dan",
+        "prince",
+        "garth_brooks"
+    ],
+    "116": [
+        "dave_matthews_band",
+        "suzanne_vega",
+        "radiohead"
+    ],
+    "117": [
+        "suzanne_vega",
+        "led_zeppelin",
+        "metallica"
+    ],
+    "118": [
+        "madonna",
+        "prince",
+        "tori_amos"
+    ],
+    "119": [
+        "prince",
+        "beatles",
+        "fleetwood_mac"
+    ],
+    "120": [
+        "beatles",
+        "roxette",
+        "madonna"
+    ],
+    "121": [
+        "creedence_clearwater_revival",
+        "led_zeppelin",
+        "beatles"
+    ],
+    "122": [
+        "radiohead",
+        "aerosmith",
+        "prince"
+    ],
+    "123": [
+        "metallica",
+        "green_day",
+        "radiohead"
+    ],
+    "124": [
+        "roxette",
+        "depeche_mode",
+        "radiohead"
+    ],
+    "125": [
+        "metallica",
+        "prince",
+        "green_day"
+    ],
+    "126": [
+        "madonna",
+        "led_zeppelin",
+        "dave_matthews_band"
+    ],
+    "127": [
+        "steely_dan",
+        "prince",
+        "depeche_mode"
+    ],
+    "128": [
+        "u2",
+        "metallica",
+        "depeche_mode"
+    ],
+    "129": [
+        "radiohead",
+        "queen",
+        "led_zeppelin"
+    ],
+    "130": [
+        "roxette",
+        "fleetwood_mac",
+        "dave_matthews_band"
+    ],
+    "131": [
+        "prince",
+        "depeche_mode",
+        "suzanne_vega"
+    ],
+    "132": [
+        "prince",
+        "depeche_mode",
+        "fleetwood_mac"
+    ],
+    "133": [
+        "madonna",
+        "depeche_mode",
+        "roxette"
+    ],
+    "134": [
+        "suzanne_vega",
+        "depeche_mode",
+        "garth_brooks"
+    ],
+    "135": [
+        "dave_matthews_band",
+        "metallica",
+        "depeche_mode"
+    ],
+    "136": [
+        "roxette",
+        "prince",
+        "depeche_mode"
+    ],
+    "137": [
+        "led_zeppelin",
+        "queen",
+        "beatles"
+    ],
+    "138": [
+        "beatles",
+        "fleetwood_mac",
+        "steely_dan"
+    ],
+    "139": [
+        "dave_matthews_band",
+        "radiohead",
+        "metallica"
+    ],
+    "140": [
+        "u2",
+        "beatles",
+        "prince"
+    ],
+    "141": [
+        "u2",
+        "dave_matthews_band",
+        "radiohead"
+    ],
+    "142": [
+        "roxette",
+        "prince",
+        "depeche_mode"
+    ],
+    "143": [
+        "queen",
+        "beatles",
+        "led_zeppelin"
+    ],
+    "144": [
+        "roxette",
+        "garth_brooks",
+        "dave_matthews_band"
+    ],
+    "145": [
+        "roxette",
+        "prince",
+        "suzanne_vega"
+    ],
+    "146": [
+        "prince",
+        "dave_matthews_band",
+        "beatles"
+    ],
+    "147": [
+        "garth_brooks",
+        "cure",
+        "u2"
+    ],
+    "148": [
+        "green_day",
+        "metallica",
+        "u2"
+    ],
+    "149": [
+        "metallica",
+        "green_day",
+        "prince"
+    ],
+    "150": [
+        "queen",
+        "led_zeppelin",
+        "aerosmith"
+    ],
+    "151": [
+        "suzanne_vega",
+        "garth_brooks",
+        "dave_matthews_band"
+    ],
+    "152": [
+        "metallica",
+        "dave_matthews_band",
+        "prince"
+    ],
+    "153": [
+        "depeche_mode",
+        "beatles",
+        "u2"
+    ],
+    "154": [
+        "depeche_mode",
+        "beatles",
+        "queen"
+    ],
+    "155": [
+        "led_zeppelin",
+        "creedence_clearwater_revival",
+        "queen"
+    ],
+    "156": [
+        "metallica",
+        "green_day",
+        "depeche_mode"
+    ],
+    "157": [
+        "dave_matthews_band",
+        "beatles",
+        "radiohead"
+    ],
+    "158": [
+        "dave_matthews_band",
+        "cure",
+        "radiohead"
+    ],
+    "159": [
+        "prince",
+        "cure",
+        "u2"
+    ],
+    "160": [
+        "green_day",
+        "metallica",
+        "u2"
+    ],
+    "161": [
+        "cure",
+        "radiohead",
+        "depeche_mode"
+    ],
+    "162": [
+        "metallica",
+        "queen",
+        "led_zeppelin"
+    ],
+    "163": [
+        "queen",
+        "garth_brooks",
+        "fleetwood_mac"
+    ],
+    "164": [
+        "garth_brooks",
+        "metallica",
+        "dave_matthews_band"
+    ],
+    "165": [
+        "radiohead",
+        "u2",
+        "dave_matthews_band"
+    ],
+    "166": [
+        "roxette",
+        "prince",
+        "suzanne_vega"
+    ],
+    "167": [
+        "cure",
+        "dave_matthews_band",
+        "green_day"
+    ],
+    "168": [
+        "prince",
+        "fleetwood_mac",
+        "u2"
+    ],
+    "169": [
+        "depeche_mode",
+        "prince",
+        "dave_matthews_band"
+    ],
+    "170": [
+        "queen",
+        "cure",
+        "led_zeppelin"
+    ],
+    "171": [
+        "beatles",
+        "fleetwood_mac",
+        "depeche_mode"
+    ],
+    "172": [
+        "led_zeppelin",
+        "aerosmith",
+        "beatles"
+    ],
+    "173": [
+        "queen",
+        "led_zeppelin",
+        "metallica"
+    ],
+    "174": [
+        "led_zeppelin",
+        "queen",
+        "aerosmith"
+    ],
+    "175": [
+        "green_day",
+        "u2",
+        "metallica"
+    ],
+    "176": [
+        "garth_brooks",
+        "creedence_clearwater_revival",
+        "dave_matthews_band"
+    ],
+    "177": [
+        "depeche_mode",
+        "cure",
+        "u2"
+    ],
+    "178": [
+        "madonna",
+        "depeche_mode",
+        "led_zeppelin"
+    ],
+    "179": [
+        "u2",
+        "green_day",
+        "depeche_mode"
+    ],
+    "180": [
+        "beatles",
+        "prince",
+        "radiohead"
+    ],
+    "181": [
+        "steely_dan",
+        "fleetwood_mac",
+        "prince"
+    ],
+    "182": [
+        "beatles",
+        "roxette",
+        "creedence_clearwater_revival"
+    ],
+    "183": [
+        "garth_brooks",
+        "dave_matthews_band",
+        "depeche_mode"
+    ],
+    "184": [
+        "prince",
+        "dave_matthews_band",
+        "roxette"
+    ],
+    "185": [
+        "suzanne_vega",
+        "fleetwood_mac",
+        "beatles"
+    ],
+    "186": [
+        "aerosmith",
+        "u2",
+        "queen"
+    ],
+    "187": [
+        "prince",
+        "roxette",
+        "aerosmith"
+    ],
+    "188": [
+        "queen",
+        "prince",
+        "cure"
+    ],
+    "189": [
+        "metallica",
+        "radiohead",
+        "cure"
+    ],
+    "190": [
+        "roxette",
+        "prince",
+        "madonna"
+    ],
+    "191": [
+        "depeche_mode",
+        "radiohead",
+        "beatles"
+    ],
+    "192": [
+        "prince",
+        "depeche_mode",
+        "fleetwood_mac"
+    ],
+    "193": [
+        "dave_matthews_band",
+        "depeche_mode",
+        "prince"
+    ],
+    "194": [
+        "radiohead",
+        "u2",
+        "cure"
+    ],
+    "195": [
+        "tori_amos",
+        "roxette",
+        "madonna"
+    ],
+    "196": [
+        "creedence_clearwater_revival",
+        "led_zeppelin",
+        "dave_matthews_band"
+    ],
+    "197": [
+        "beatles",
+        "prince",
+        "fleetwood_mac"
+    ],
+    "198": [
+        "u2",
+        "cure",
+        "madonna"
+    ],
+    "199": [
+        "dave_matthews_band",
+        "cure",
+        "prince"
+    ],
+    "200": [
+        "suzanne_vega",
+        "garth_brooks",
+        "dave_matthews_band"
+    ],
+    "201": [
+        "garth_brooks",
+        "cure",
+        "suzanne_vega"
+    ],
+    "202": [
+        "tori_amos",
+        "roxette",
+        "prince"
+    ],
+    "203": [
+        "creedence_clearwater_revival",
+        "aerosmith",
+        "beatles"
+    ],
+    "204": [
+        "creedence_clearwater_revival",
+        "dave_matthews_band",
+        "beatles"
+    ],
+    "205": [
+        "suzanne_vega",
+        "garth_brooks",
+        "steely_dan"
+    ],
+    "206": [
+        "led_zeppelin",
+        "beatles",
+        "aerosmith"
+    ],
+    "207": [
+        "green_day",
+        "u2",
+        "metallica"
+    ],
+    "208": [
+        "fleetwood_mac",
+        "steely_dan",
+        "depeche_mode"
+    ],
+    "209": [
+        "aerosmith",
+        "metallica",
+        "roxette"
+    ],
+    "210": [
+        "dave_matthews_band",
+        "garth_brooks",
+        "creedence_clearwater_revival"
+    ],
+    "211": [
+        "radiohead",
+        "beatles",
+        "u2"
+    ],
+    "212": [
+        "aerosmith",
+        "steely_dan",
+        "queen"
+    ],
+    "213": [
+        "beatles",
+        "led_zeppelin",
+        "prince"
+    ],
+    "214": [
+        "cure",
+        "dave_matthews_band",
+        "garth_brooks"
+    ],
+    "215": [
+        "tori_amos",
+        "led_zeppelin",
+        "radiohead"
+    ],
+    "216": [
+        "radiohead",
+        "u2",
+        "aerosmith"
+    ],
+    "217": [
+        "roxette",
+        "dave_matthews_band",
+        "madonna"
+    ],
+    "218": [
+        "led_zeppelin",
+        "queen",
+        "green_day"
+    ],
+    "219": [
+        "metallica",
+        "green_day",
+        "queen"
+    ],
+    "220": [
+        "dave_matthews_band",
+        "steely_dan",
+        "roxette"
+    ],
+    "221": [
+        "radiohead",
+        "roxette",
+        "depeche_mode"
+    ],
+    "222": [
+        "madonna",
+        "fleetwood_mac",
+        "roxette"
+    ],
+    "223": [
+        "madonna",
+        "roxette",
+        "fleetwood_mac"
+    ],
+    "224": [
+        "cure",
+        "dave_matthews_band",
+        "suzanne_vega"
+    ],
+    "225": [
+        "suzanne_vega",
+        "depeche_mode",
+        "madonna"
+    ],
+    "226": [
+        "creedence_clearwater_revival",
+        "beatles",
+        "led_zeppelin"
+    ],
+    "227": [
+        "metallica",
+        "u2",
+        "creedence_clearwater_revival"
+    ],
+    "228": [
+        "green_day",
+        "metallica",
+        "u2"
+    ],
+    "229": [
+        "led_zeppelin",
+        "aerosmith",
+        "creedence_clearwater_revival"
+    ],
+    "230": [
+        "dave_matthews_band",
+        "radiohead",
+        "green_day"
+    ],
+    "231": [
+        "metallica",
+        "green_day",
+        "suzanne_vega"
+    ],
+    "232": [
+        "green_day",
+        "u2",
+        "aerosmith"
+    ],
+    "233": [
+        "queen",
+        "u2",
+        "led_zeppelin"
+    ]
+}
