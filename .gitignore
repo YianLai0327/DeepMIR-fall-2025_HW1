@@ -2,3 +2,4 @@ dataset/*
 __pycache__
 hw1.zip
 models
+tsne_results

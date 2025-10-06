@@ -23,27 +23,28 @@ chunk_duration = 30.0  # seconds
 chunk_overlap = 0.5  # 50% overlap for training
 
 # DataLoaders
-# train_loader = create_dataloader(
-#     json_list='./dataset/train_vocal.json',
-#     batch_size=batch_size,
-#     num_workers=4,
-#     sr=16000,
-#     n_mels=n_mels,
-#     hop_length=hop_length,
-#     chunk_duration=chunk_duration,
-#     overlap=chunk_overlap, 
-#     is_onehot=False,
-#     mode='train'
-# )
-train_loader = MixedAudioDataset.create_mixed_dataloader(
-    vocal_json="dataset/train_vocal.json",
-    full_json="dataset/artist20/train.json",
-    batch_size=16,
-    chunk_duration=30.0,
-    overlap=0.5,
-    vocal_ratio=0.5,
+train_loader = create_dataloader(
+    # json_list='./dataset/train_vocal.json',
+    json_list='./dataset/artist20/train.json',
+    batch_size=batch_size,
+    num_workers=4,
+    sr=16000,
+    n_mels=n_mels,
+    hop_length=hop_length,
+    chunk_duration=chunk_duration,
+    overlap=chunk_overlap, 
+    is_onehot=False,
     mode='train'
 )
+# train_loader = MixedAudioDataset.create_mixed_dataloader(
+#     vocal_json="dataset/train_vocal.json",
+#     full_json="dataset/artist20/train.json",
+#     batch_size=16,
+#     chunk_duration=30.0,
+#     overlap=0.5,
+#     vocal_ratio=0.5,
+#     mode='train'
+# )
 
 val_loader = create_dataloader(
     json_list='./dataset/artist20/val.json',

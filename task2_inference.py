@@ -192,7 +192,7 @@ class SingerClassifier:
 
         for audio_path in tqdm(audio_paths, desc="Batch Predicting"):
             label = None
-            is_full_mix = 'vocal' not in audio_path
+            is_full_mix = 'vocal' not in audio_path and 'test' not in audio_path
             if "test" not in audio_path:
                 label = audio_path.split('/')[-3] if is_full_mix else audio_path.split('/')[-2].split('-')[0][:-3]
                 # label = label[:-3]
@@ -230,36 +230,21 @@ class SingerClassifier:
 
 if __name__ == "__main__":
     classifier = SingerClassifier(
+        # model_path='./models/task2/vocal_only.pth',
         model_path='./models/task2/full_mix_w_vocal.pth',
-        chunk_duration=30.0,  # 與訓練時一致
-        stride_ratio=0.5,     # 50% 重疊
+        # model_path='./models/task2/song_only.pth',
+        chunk_duration=30.0, 
+        stride_ratio=0.5, 
         device='cuda'
     )
     
-    # audio_path = "./dataset/artist20/train_val/aerosmith/Pump/01-Young_Lust.mp3"
-
-    # print("\n" + "="*60)
-    # print("Inference")
-    # print("="*60)
-
-    # pred_class, pred_name, pred_top3_class, pred_top3_name, confidence, details = classifier.predict_song(audio_path)
-    
-    # print(f"Predicted: {pred_name} (class {pred_class})")
-    # print(f"Top-3 Predictions: {pred_top3_name} (classes {pred_top3_class})")
-    # print(f"Confidence: {confidence:.2%}")
-    # print(f"Chunks analyzed: {details['num_chunks']}")
-    # print(f"Chunk predictions: {details['chunk_predictions'][:5]}...")  # 顯示前5個
-    
-    # # 批次預測
-    print("\n" + "="*60)
-    print("Batch prediction:")
-    print("="*60)
-    
     import json
-    input_audios = "./dataset/artist20/test.json"
+    # input_audios = "./dataset/artist20/test.json"
+    # input_audios = "./dataset/val_vocal.json"
+    input_audios = "./dataset/artist20/val.json"
 
-    top1_pred_json = "./dataset/task2_test_top1_predictions_full_w_vocal.json"
-    top3_pred_json = "./dataset/task2_test_top3_predictions_full_w_vocal.json"
+    top1_pred_json = "./dataset/task2_val_top1_predictions_only_song.json"
+    top3_pred_json = "./dataset/task2_val_top3_predictions_only_song.json"
 
     with open(input_audios, 'r') as f:
         datas = json.load(f)
