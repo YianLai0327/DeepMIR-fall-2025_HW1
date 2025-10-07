@@ -229,27 +229,52 @@ class SingerClassifier:
         return results, top1_result, top3_results, top1_acc / total, top3_acc / total
 
 if __name__ == "__main__":
+    import argparse
+    import os
+    import json
+
+    draw_cm = False
+
+    Arg = argparse.ArgumentParser()
+    Arg.add_argument('--model_path', type=str, default='./models/task2/full_mix_w_vocal.pth', help='path to the trained model')
+    Arg.add_argument('--input', type=str, default='./dataset/artist20/test', help='path to input JSON file with audio paths or to audio directory')
+    Arg.add_argument('--prediction_json', type=str, default='./task2_top3_predictions.json', help='path to save the top-3 output JSON file')
+    args = Arg.parse_args()
+
     classifier = SingerClassifier(
         # model_path='./models/task2/vocal_only.pth',
-        model_path='./models/task2/full_mix_w_vocal.pth',
+        # model_path='./models/task2/full_mix_w_vocal.pth',
         # model_path='./models/task2/song_only.pth',
+        model_path=args.model_path,
         chunk_duration=30.0, 
         stride_ratio=0.5, 
         device='cuda'
     )
     
-    import json
     # input_audios = "./dataset/artist20/test.json"
     # input_audios = "./dataset/val_vocal.json"
-    input_audios = "./dataset/artist20/val.json"
+    # input_audios = "./dataset/artist20/val.json"
+    input_audios = args.input
 
-    top1_pred_json = "./dataset/task2_val_top1_predictions_only_song.json"
-    top3_pred_json = "./dataset/task2_val_top3_predictions_only_song.json"
+    # Handle input which can be a JSON file or a directory
+    if input_audios.endswith('.json'):
+        with open(input_audios, 'r') as f:
+            input_audios = json.load(f)
+    elif os.path.isdir(input_audios):
+        input_dir = input_audios
+        input_audios = []
+        for root, _, files in os.walk(input_dir):
+            for file in files:
+                if file.endswith('.mp3') or file.endswith('.wav'):
+                    file_path = os.path.join(root, file)
+                    input_audios.append(file_path)
+        input_audios = sorted(input_audios)
 
-    with open(input_audios, 'r') as f:
-        datas = json.load(f)
+    # top1_pred_json = "./dataset/task2_val_top1_predictions_only_song.json"
+    # top3_pred_json = "./dataset/task2_val_top3_predictions_only_song.json"
+    top3_pred_json = args.prediction_json
     
-    results, top1_result, top3_results, top1_acc, top3_acc = classifier.predict_batch(datas)
+    results, top1_result, top3_results, top1_acc, top3_acc = classifier.predict_batch(input_audios)
 
     if top1_acc > 0 and top3_acc > 0:
         print(f"Top-1 Accuracy: {top1_acc:.2%}")
@@ -257,23 +282,23 @@ if __name__ == "__main__":
     else:
         print("inferencing test set without ground truth, finished w/o accuracy and confusion matrix calculation.")
 
-    with open(top1_pred_json, 'w') as f:
-        json.dump(top1_result, f, indent=4)
+    # with open(top1_pred_json, 'w') as f:
+    #     json.dump(top1_result, f, indent=4)
 
     with open(top3_pred_json, 'w') as f:
         json.dump(top3_results, f, indent=4)
 
-    print(f"Top-1 predictions saved to {top1_pred_json}")
+    # print(f"Top-1 predictions saved to {top1_pred_json}")
     print(f"Top-3 predictions saved to {top3_pred_json}")
 
     # calculate confusion matrix for those data with gt
-    if top1_acc > 0 and top3_acc > 0:
+    if top1_acc > 0 and top3_acc > 0 and draw_cm:
         from sklearn.metrics import confusion_matrix
         import matplotlib.pyplot as plt
         import seaborn as sns
 
         # gt_labels = [p.split('/')[-2].split('-')[0][:-3] for p in datas]
-        gt_labels = [p.split('/')[-3] for p in datas]
+        gt_labels = [p.split('/')[-3] for p in input_audios]
         cm = confusion_matrix(gt_labels, top1_result, labels=classifier.class_names)
 
         plt.figure(figsize=(12, 10))
