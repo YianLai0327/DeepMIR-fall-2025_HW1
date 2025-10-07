@@ -11,7 +11,7 @@ note that I do the hw in python 3.10
 
 Download the trained model checkpoints:
 ```bash
-bash get_models.sh
+bash get_ckpts.sh
 ```
 
 ### Inference
