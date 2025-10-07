@@ -9,7 +9,7 @@ pip install -r requirements.txt
 ```
 note that I do the hw in python 3.10
 
-Download the pre-trained models:
+Download the trained model checkpoints:
 ```bash
 bash get_models.sh
 ```
