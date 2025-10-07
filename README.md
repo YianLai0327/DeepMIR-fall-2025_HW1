@@ -7,6 +7,7 @@ Install all required packages:
 ```bash
 pip install -r requirements.txt
 ```
+note that I do the hw in python 3.10
 
 Download the pre-trained models:
 ```bash
