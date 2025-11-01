@@ -1,4 +1,6 @@
-dataset/*
+dataset/artist20
+dataset/train_seperation_results
+dataset/val_seperation_results
 __pycache__
 hw1.zip
 models
